@@ -154,6 +154,7 @@ function color_finalized() {
 	// Add the new color to the list of previous colors
 	var new_colorbox = document.createElement('div')
 	new_colorbox.style.backgroundColor = color_preview.style.backgroundColor
+	new_colorbox.setAttribute('title', color_preview.style.backgroundColor);
 	previous_colors_collection.appendChild(new_colorbox)
 	document.body.parentElement.style.backgroundColor = color_preview.style.backgroundColor
 }
