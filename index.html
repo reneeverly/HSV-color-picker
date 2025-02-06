@@ -24,7 +24,7 @@ body { width: 210px; background-color: Menu; color: MenuText; font: menu; margin
 </head>
 <body>
 <div id="color_preview"></div><div id="color_previous"></div>
-<canvas width="210" height="210" id="can"></canvas>
+<canvas width="210" height="210" id="color_selection_can"></canvas>
 <h2 class="captionbar">HSV Values</h2>
 <input type="text" id="hue" value="0"></input>
 <input type="text" id="sat" value="1"></input>
@@ -34,7 +34,7 @@ body { width: 210px; background-color: Menu; color: MenuText; font: menu; margin
 <h2 class="captionbar">Hint</h2>
 <p>Color selection is confirmed when left side color bar is clicked on.</p>
 <script>
-var can = document.getElementById('can')
+var color_selection_can = document.getElementById('color_selection_can')
 var color_preview = document.getElementById('color_preview')
 var color_previous = document.getElementById('color_previous')
 var previous_colors_collection = document.getElementById('previous_colors_collection')
@@ -50,29 +50,29 @@ function hsv_to_rgb(h, s, v) {
 
 var square_width = 126 // 146
 var square_height = 126 // 146
-var ctx = can.getContext('2d', {colorSpace: "srgb"})
+var ctx = color_selection_can.getContext('2d', {colorSpace: "srgb"})
 
 var inner_radius = Math.sqrt(Math.pow(square_height, 2) + Math.pow(square_height, 2))/2
 
-var square_x = can.width/2 - square_width/2
-var square_y = can.height/2 - square_height/2
+var square_x = color_selection_can.width/2 - square_width/2
+var square_y = color_selection_can.height/2 - square_height/2
 
 function draw_hue_circle() {
-	var center_x = can.width/2
-	var center_y = can.height/2
+	var center_x = color_selection_can.width/2
+	var center_y = color_selection_can.height/2
 
-	var newimage = ctx.createImageData(can.width, can.height)
+	var newimage = ctx.createImageData(color_selection_can.width, color_selection_can.height)
 	var newctx = newimage.data
 
 	for (var radius = inner_radius; radius < inner_radius + 18; radius += 1) {
 		for (var degree = 0; degree < 360; degree += 0.25) {
-			var x = Math.min(can.width-1,Math.max(0,
+			var x = Math.min(color_selection_can.width-1,Math.max(0,
 				Math.floor(-radius * Math.cos(degree * Math.PI / 180) + center_x)
 				))
-			var y = Math.min(can.height-1,Math.max(0,
+			var y = Math.min(color_selection_can.height-1,Math.max(0,
 				Math.floor(-radius * Math.sin(degree * Math.PI / 180) + center_y)
 				))
-			var index = 4 * (can.width * y + x)
+			var index = 4 * (color_selection_can.width * y + x)
 			var tri = hsv_to_rgb(degree, 1, 1)
 			newctx[index + 0] = tri[0]*255
 			newctx[index + 1] = tri[1]*255
@@ -86,7 +86,7 @@ function draw_hue_circle() {
 }
 
 
-function blah(h) {
+function rerender_canvas_for_hue(h) {
 	
 
 	var newimage = ctx.createImageData(square_width, square_height)
@@ -108,15 +108,15 @@ function blah(h) {
 }
 
 function can_mouseup(e) {
-	var rect = can.getBoundingClientRect()
+	var rect = color_selection_can.getBoundingClientRect()
 	var x = e.clientX - rect.left
 	var y = e.clientY - rect.top
-	var radius = Math.sqrt(Math.pow(x - can.width/2, 2) + Math.pow(y - can.height/2, 2))
+	var radius = Math.sqrt(Math.pow(x - color_selection_can.width/2, 2) + Math.pow(y - color_selection_can.height/2, 2))
 
 	if (radius >= inner_radius) {
 
-		var x_from_center = -x + can.width/2
-		var y_from_center = -y + can.width/2
+		var x_from_center = -x + color_selection_can.width/2
+		var y_from_center = -y + color_selection_can.width/2
 	
 		// works for left half, right half broken
 
@@ -128,7 +128,7 @@ function can_mouseup(e) {
 		hue.value = degree
 
 		console.log(x_from_center, y_from_center, degree)
-		blah(Math.floor(degree))
+		rerender_canvas_for_hue(Math.floor(degree))
 	} else {
 
 		// normalize coordinates to the square
@@ -145,7 +145,7 @@ function can_mouseup(e) {
 	//color_previous.style.backgroundColor = color_preview.style.backgroundColor
 	color_preview.style.backgroundColor = 'rgb(' + Math.floor(tri[0]*255) + ',' + Math.floor(tri[1]*255) + ',' + Math.floor(tri[2]*255) + ')'
 }
-can.addEventListener('mouseup', function(e) { can_mouseup(e) })
+color_selection_can.addEventListener('mouseup', function(e) { can_mouseup(e) })
 
 function color_finalized() {
 	// update the previous_color
@@ -162,7 +162,7 @@ color_preview.addEventListener('mouseup', color_finalized)
 </script>
 <script>
 draw_hue_circle()
-blah(hue.value)
+rerender_canvas_for_hue(hue.value)
 var tri = hsv_to_rgb(hue.value, sat.value, val.value)
 color_preview.style.backgroundColor = 'rgb(' + Math.floor(tri[0]*255) + ',' + Math.floor(tri[1]*255) + ',' + Math.floor(tri[2]*255) + ')'
 document.body.parentElement.style.backgroundColor = '#eeeeee'
